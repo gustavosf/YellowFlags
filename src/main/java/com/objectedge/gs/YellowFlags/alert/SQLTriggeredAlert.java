@@ -9,6 +9,7 @@ import dnl.utils.text.table.TextTable;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidParameterException;
 import java.sql.Date;
 import java.util.Map;
 
@@ -20,8 +21,14 @@ public class SQLTriggeredAlert implements Alert {
         this.file = file;
         if (file.exists()) {
             model = new SQLAlertModel();
-            InputStreamReader isr = new InputStreamReader(new FileInputStream(file), "UTF-8");
+            InputStreamReader isr = new InputStreamReader(
+                    new FileInputStream(file), "UTF-8");
             model.load(isr);
+            if (!model.validate()) {
+                throw new InvalidParameterException("File is not a valid SQL-based Alert");
+            }
+        } else {
+            throw new InvalidParameterException("Alert file does not exist");
         }
     }
 

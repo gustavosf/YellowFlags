@@ -21,21 +21,9 @@ public class SQLite {
         String sql = "INSERT INTO "+table+" (\""+col+"\") VALUES "+val;
 
         try {
-            PreparedStatement st = getConnection().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-            for (int i = 1; i <= valuesArray.length; i++) {
-                Object value = valuesArray[i-1];
-                if (value instanceof Integer) {
-                    st.setInt(i, (int) value);
-                } else if (value instanceof Boolean) {
-                    st.setBoolean(i, (boolean) value);
-                } else if (value instanceof Date) {
-                    st.setDate(i, (Date) value);
-                } else if (value instanceof Long) {
-                    st.setLong(i, (long) value);
-                } else {
-                    st.setString(i, value.toString());
-                }
-            }
+            PreparedStatement st = getConnection().prepareStatement(
+                    sql, Statement.RETURN_GENERATED_KEYS);
+            setValues(st, valuesArray);
             if (st.execute()) {
                 ResultSet generatedKeys = st.getGeneratedKeys();
                 if (generatedKeys.next()) {
@@ -61,20 +49,7 @@ public class SQLite {
 
         try {
             PreparedStatement st = getConnection().prepareStatement(sql);
-            for (int i = 1; i <= valuesArray.length; i++) {
-                Object value = valuesArray[i-1];
-                if (value instanceof Integer) {
-                    st.setInt(i, (int) value);
-                } else if (value instanceof Boolean) {
-                    st.setBoolean(i, (boolean) value);
-                } else if (value instanceof Date) {
-                    st.setDate(i, (Date) value);
-                } else if (value instanceof Long) {
-                    st.setLong(i, (long) value);
-                } else {
-                    st.setString(i, value.toString());
-                }
-            }
+            setValues(st, valuesArray);
             return st.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -82,14 +57,21 @@ public class SQLite {
         return 0;
     }
 
-    public ResultSet select(String sql) {
-        try {
-            Statement st = getConnection().createStatement();
-            return st.executeQuery(sql);
-        } catch (SQLException e) {
-            e.printStackTrace();
+    private void setValues(PreparedStatement st, Object[] valuesArray) throws SQLException {
+        for (int i = 1; i <= valuesArray.length; i++) {
+            Object value = valuesArray[i-1];
+            if (value instanceof Integer) {
+                st.setInt(i, (int) value);
+            } else if (value instanceof Boolean) {
+                st.setBoolean(i, (boolean) value);
+            } else if (value instanceof Date) {
+                st.setDate(i, (Date) value);
+            } else if (value instanceof Long) {
+                st.setLong(i, (long) value);
+            } else {
+                st.setString(i, value.toString());
+            }
         }
-        return null;
     }
 
     private Connection getConnection() throws SQLException {
@@ -105,16 +87,16 @@ public class SQLite {
         return connection;
     }
 
-    public History getHistory() {
-        return new History(this);
-    }
-
     public ResultSet query(String sql) {
         try {
             return getConnection().createStatement().executeQuery(sql);
         } catch (SQLException e) {
             return null;
         }
+    }
+
+    public History getHistory() {
+        return new History(this);
     }
 
 }

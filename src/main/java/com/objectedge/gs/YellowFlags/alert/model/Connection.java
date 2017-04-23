@@ -1,6 +1,5 @@
 package com.objectedge.gs.YellowFlags.alert.model;
 
-import com.objectedge.gs.YellowFlags.App;
 import com.objectedge.gs.YellowFlags.Log;
 
 import java.sql.DriverManager;

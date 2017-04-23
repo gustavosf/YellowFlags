@@ -7,6 +7,7 @@ import it.sauronsoftware.cron4j.Scheduler;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
+import java.security.InvalidParameterException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,8 +15,15 @@ import static java.nio.file.StandardWatchEventKinds.*;
 
 public class App {
 
+    private static SQLite persistence = new SQLite(Config.get("persistence.db").toString());
+
     private Scheduler scheduler = new Scheduler();
     private Map<String,String> scheduleIds = new HashMap<>();
+
+    public static void main(String[] args) throws Exception {
+        App example = new App();
+        example.run("alerts");
+    }
 
     private void run(String path) throws Exception {
         Log.info("[App] Scheduling alerts from path [{0}]", path);
@@ -32,6 +40,15 @@ public class App {
         scheduler.start();
 
         Log.info("[App] Starting file watcher service");
+        startWatcher(dir);
+
+        // Execution is kept by the watcher
+
+        // Stops the scheduler.
+        scheduler.stop();
+    }
+
+    private void startWatcher(Path dir) throws IOException {
         WatchService watcher = FileSystems.getDefault().newWatchService();
         dir.register(watcher, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
         while (true) {
@@ -64,13 +81,6 @@ public class App {
             boolean valid = key.reset();
             if (!valid) break;
         }
-
-
-        try {
-            Thread.sleep(1000L * 60L * 10L);
-        } catch (InterruptedException e) { }
-        // Stops the scheduler.
-        scheduler.stop();
     }
 
     private void descheduleAlert(String fileId) {
@@ -84,21 +94,20 @@ public class App {
     private void scheduleAlert(File file) {
         try {
             SQLTriggeredAlert alert = new SQLTriggeredAlert(file);
-            Log.info("[Scheduler] Scheduling [{0}] with cron [{1}]", alert.getId(), alert.getSchedule());
+            Log.info("[Scheduler] Scheduling [{0}] with cron [{1}]",
+                    alert.getId(), alert.getSchedule());
             scheduleIds.put(file.getName(), scheduler.schedule(alert.getSchedule(), alert));
-        } catch (IOException e) {
+        } catch (InvalidParameterException e) {
+            Log.error("[Scheduler] An error occurred while trying to schedule [{0}]: {1}",
+                    file, e.getMessage());
+        }
+        catch (IOException e) {
             Log.error(e,"[Scheduler] An error occurred while trying to schedule [{0}]", file);
         }
     }
 
-    private static SQLite persistence = new SQLite("resources/db.sqlite");
     public static SQLite getPersistence() {
         return persistence;
-    }
-
-    public static void main(String[] args) throws Exception {
-        App example = new App();
-        example.run("alerts");
     }
 
 }

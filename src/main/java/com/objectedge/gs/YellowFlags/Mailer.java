@@ -6,33 +6,21 @@ import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Properties;
 
+@SuppressWarnings("ConstantConditions")
 public class Mailer {
 
-    public static Properties config;
-    static {
-        config = new Properties();
-        InputStream is = Mailer.class.getResourceAsStream("/mailer.properties");
-        try {
-            config.load(is);
-        } catch (IOException e) {
-            Log.info("[Mailer] Unable to load config for mailer");
-        }
-    }
+    private Properties props;
 
-    private Properties props = new Properties(){{
-        put("mail.smtp.host", "smtp.gmail.com");
-        put("mail.smtp.socketFactory.port", "465");
-        put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-        put("mail.smtp.auth", "true");
-        put("mail.smtp.port", "465");
-    }};
-
-    public String getConfig(String param) {
-        return config.getProperty(param);
+    public Mailer() {
+        props = new Properties(){{
+            put("mail.smtp.host", Config.get("smtp.host", "mailer"));
+            put("mail.smtp.socketFactory.port", Config.get("smtp.port", "mailer"));
+            put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+            put("mail.smtp.auth", "true");
+            put("mail.smtp.port", Config.get("smtp.port", "mailer"));
+        }};
     }
 
     private Session getSession() {
@@ -40,7 +28,8 @@ public class Mailer {
                 new javax.mail.Authenticator() {
                     protected PasswordAuthentication getPasswordAuthentication() {
                         return new PasswordAuthentication(
-                                getConfig("username"), getConfig("password"));
+                                (String)Config.get("username", "mailer"),
+                                (String)Config.get("password", "mailer"));
                     }
                 });
     }
@@ -48,7 +37,7 @@ public class Mailer {
     public void send(String recipients, String subject, String content) {
         try {
             MimeMessage message = new MimeMessage(getSession());
-            message.setFrom(new InternetAddress(getConfig("from")));
+            message.setFrom(new InternetAddress((String)Config.get("from", "mailer")));
             message.setRecipients(Message.RecipientType.TO,
                     InternetAddress.parse(recipients));
             message.setSubject(subject);

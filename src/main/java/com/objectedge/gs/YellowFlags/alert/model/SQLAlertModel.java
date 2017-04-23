@@ -13,12 +13,8 @@ public class SQLAlertModel extends Properties {
     private Connection connection;
 
     private Connection getConnection() {
-        if (connection == null) {
-            connection = new Connection(
-                    (String) this.get("connectionUrl"),
-                    (String) this.get("user"),
-                    (String) this.get("pass"));
-        }
+        if (connection == null)
+            connection = new Connection(getConnectionUrl(), getUsername(), getPassword());
         return connection;
     }
 
@@ -54,32 +50,58 @@ public class SQLAlertModel extends Properties {
     }
 
     public String getQuery() {
-        return (String) get("query");
+        return getProperty("query");
     }
     public Long getThreshold() {
-        return new Long((String)get("alertThreshold"));
+        return new Long(getProperty("alertThreshold"));
     }
     public String getCron() {
-        return (String) get("cron");
+        return getProperty("cron");
     }
     public String getRecipients() {
-        return (String) get("recipients");
+        return getProperty("recipients");
     }
     public Boolean getAppendResults() {
         Boolean append = Boolean.valueOf((String)get("appendResults"));
         return append != null ? append : false;
     }
     public String getAlertMessage() {
-        return (String) get("alert.message");
+        String message = (String) get("alert.message");
+        return message != null ? message : "Alerta";
     }
     public String getAlertSubject() {
-        return (String) get("alert.subject");
+        return getProperty("alert.subject");
     }
     public String getNormalizedSubject() {
-        return (String) get("normalized.subject");
+        String message = getProperty("normalized.subject");
+        return message != null ? message : "Alerta normalizado";
     }
     public String getNormlizedMessage() {
-        return (String) get("normalized.message");
+        return getProperty("normalized.message");
     }
 
+    private String getConnectionUrl() {
+        return getProperty("connectionUrl");
+    }
+    private String getUsername() {
+        return getProperty("user");
+    }
+    private String getPassword() {
+        return getProperty("pass");
+    }
+
+    /**
+     * Checks if properties file is filled up correctly for this kind
+     * of alert
+     * @return false if it does not meet all the required attribues
+     */
+    public boolean validate() {
+        return getQuery() != null
+                && getCron() != null
+                && getRecipients() != null
+                && getThreshold() != null
+                && getConnection() != null
+                && getUsername() != null
+                && getPassword() != null;
+    }
 }

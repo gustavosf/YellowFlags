@@ -9,6 +9,7 @@
 # Maven
 log/
 target/
+out/
 
 # Project
 alerts/
