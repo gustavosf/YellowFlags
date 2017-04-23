@@ -1,5 +1,7 @@
 package com.objectedge.gs.YellowFlags.persistence;
 
+import org.apache.commons.lang.StringUtils;
+
 import java.sql.*;
 import java.sql.Date;
 import java.util.*;
@@ -15,11 +17,9 @@ public class SQLite {
 
     public int insert(String table, HashMap<String,Object> values) {
         Object[] valuesArray = values.values().toArray(new Object[0]);
-        String val = "("+String.join(",", Collections.nCopies(values.size(), "?"))+")";
-        String col = String.join("\",\"", values.keySet().toArray(new String[0]));
-
-        String sql = "INSERT INTO "+table+" (\""+col+"\") VALUES "+val;
-
+        String val = String.join(",", Collections.nCopies(values.size(), "?"));
+        String col = String.join(",", values.keySet().toArray(new String[0]));
+        String sql = "INSERT INTO "+table+" ("+col+") VALUES ("+val+")";
         try {
             PreparedStatement st = getConnection().prepareStatement(
                     sql, Statement.RETURN_GENERATED_KEYS);
@@ -44,7 +44,7 @@ public class SQLite {
         for (Map.Entry<String,Object> entry : values.entrySet()) {
             set.add(entry.getKey()+"=?");
         }
-        sql += String.join(",", set);
+        sql += StringUtils.join(set, ",");
         sql += " WHERE id="+id;
 
         try {
@@ -74,11 +74,11 @@ public class SQLite {
         }
     }
 
-    private Connection getConnection() throws SQLException {
+    synchronized private Connection getConnection() throws SQLException {
         try {
             if (connection == null || connection.isClosed()) {
                 Class.forName("org.sqlite.JDBC");
-                connection = DriverManager.getConnection("jdbc:sqlite:"+this.file);
+                connection = DriverManager.getConnection("jdbc:sqlite:" + this.file);
                 connection.setAutoCommit(true);
             }
         } catch (ClassNotFoundException e) {

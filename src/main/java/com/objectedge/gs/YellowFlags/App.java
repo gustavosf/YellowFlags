@@ -5,6 +5,7 @@ import com.objectedge.gs.YellowFlags.persistence.SQLite;
 import it.sauronsoftware.cron4j.Scheduler;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.file.*;
 import java.security.InvalidParameterException;
