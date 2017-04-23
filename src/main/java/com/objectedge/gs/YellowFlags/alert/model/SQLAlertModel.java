@@ -53,7 +53,6 @@ public class SQLAlertModel extends Properties {
         return map;
     }
 
-
     public String getQuery() {
         return (String) get("query");
     }
@@ -63,18 +62,24 @@ public class SQLAlertModel extends Properties {
     public String getCron() {
         return (String) get("cron");
     }
-    public String getSubject() {
-        return (String) get("subject");
-    }
     public String getRecipients() {
         return (String) get("recipients");
-    }
-    public String getMessage() {
-        return (String) get("message");
     }
     public Boolean getAppendResults() {
         Boolean append = Boolean.valueOf((String)get("appendResults"));
         return append != null ? append : false;
+    }
+    public String getAlertMessage() {
+        return (String) get("alert.message");
+    }
+    public String getAlertSubject() {
+        return (String) get("alert.subject");
+    }
+    public String getNormalizedSubject() {
+        return (String) get("normalized.subject");
+    }
+    public String getNormlizedMessage() {
+        return (String) get("normalized.message");
     }
 
 }

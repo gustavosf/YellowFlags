@@ -1,0 +1,6 @@
+from=yellow-flags@objectedge.com
+username=gustavo.farias@objectedge.com
+password=dasdsadsadsadsadsadsa
+
+smtp.host=smtp.gmail.com
+smtp.port=465

@@ -1,6 +1,7 @@
 package com.objectedge.gs.YellowFlags.alert.model;
 
 import com.objectedge.gs.YellowFlags.App;
+import com.objectedge.gs.YellowFlags.Log;
 
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -34,10 +35,10 @@ class Connection {
     }
 
     void closeConnection() throws SQLException {
-        if (connection != null && connection.isClosed()) {
-            App.log("Closing connection...");
+        if (connection != null && !connection.isClosed()) {
+            Log.trace("[Connetion] Closing connection...");
             connection.close();
-            App.log("Connection closed.");
+            Log.trace("[Connetion] Connection closed.");
             connection = null;
         }
     }
